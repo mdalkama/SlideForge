@@ -9,7 +9,7 @@ export default function GeneratePage() {
         audience: '',
         tone: 'Professional',
         language: 'en',
-        slideCount: 10,
+        slideCount: 2,
         theme: 'Default',
         themeShade: 'Light'
     });
@@ -421,8 +421,8 @@ export default function GeneratePage() {
                                             id="slideCount"
                                             name="slideCount"
                                             type="number"
-                                            min="3"
-                                            max="50"
+                                            min="1"
+                                            max="5"
                                             value={formData.slideCount}
                                             onChange={handleInputChange}
                                             required
