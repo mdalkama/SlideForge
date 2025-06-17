@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, FileText, Palette, Globe, Zap, ArrowRight, Wand2, Settings, Target, Users, ChevronDown } from 'lucide-react';
-
+import { BASE_URL } from '../../constants';
+import { useGeneratePresentation } from '../../hooks/useGeneratePresentation';
 export default function GeneratePage() {
     const [formData, setFormData] = useState({
         topic: '',
@@ -13,9 +14,10 @@ export default function GeneratePage() {
         themeShade: 'Light'
     });
 
-    const [isGenerating, setIsGenerating] = useState(false);
     const [themePrompt, setThemePrompt] = useState('');
     const [errors, setErrors] = useState({});
+
+    const { generate, isLoading, error, data, cancel } = useGeneratePresentation();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -81,7 +83,7 @@ export default function GeneratePage() {
     // Initialize theme prompt on component mount
     useEffect(() => {
         updateThemePrompt(formData.theme, formData.themeShade);
-    }, []);
+    }, [formData.theme, formData.themeShade]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -103,8 +105,6 @@ export default function GeneratePage() {
             return;
         }
 
-        setIsGenerating(true);
-
         try {
             // Create the request body that matches your API expectation
             const requestBody = {
@@ -117,40 +117,18 @@ export default function GeneratePage() {
 
             console.log('API Request Body:', requestBody);
 
-            // Replace this with your actual API call
-            const response = await fetch('https://x88l33tz-3000.inc1.devtunnels.ms/api/v1/presentation/generate-presentation-plan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            });
-            const data = await response.json();
-            console.log(data.data)
+            const generatedData = await generate(requestBody);
 
-            const mainResponse = await fetch('https://x88l33tz-3000.inc1.devtunnels.ms/api/v1/slide/render-slides', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data.data)
-            });
-            const newdata = await mainResponse.json();
-            console.log(newdata)
-            if (newdata) {
-                setIsGenerating(false);
+            console.log('Generated Data:', generatedData);
+
+            // Handle successful response here - set data, navigate etc.
+            if (generatedData) {
+              // For example, store it in local storage, context or state for rendering in another component.
+              // localStorage.setItem('presentationSlides', JSON.stringify(generatedData));
             }
-
-            // Simulate API call for now
-            // setTimeout(() => {
-            //     setIsGenerating(false);
-            //     console.log('Generated presentation with request:', requestBody);
-            //     // Handle successful response here
-            // }, 2000);
 
         } catch (error) {
             console.error('Error generating presentation:', error);
-            setIsGenerating(false);
         }
     };
 
@@ -457,7 +435,7 @@ export default function GeneratePage() {
                             {/* Generate Button */}
                             <div className="pt-6 border-t border-gray-200">
                                 <button
-                                    disabled={isGenerating}
+                                    disabled={isLoading}
                                     onClick={handleSubmit}
                                     className="w-full group relative overflow-hidden px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none"
                                 >
@@ -466,7 +444,7 @@ export default function GeneratePage() {
 
                                     {/* Button content */}
                                     <div className="relative flex items-center justify-center space-x-2">
-                                        {isGenerating ? (
+                                        {isLoading ? (
                                             <>
                                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                                 <span>Generating Presentation...</span>
@@ -480,6 +458,7 @@ export default function GeneratePage() {
                                         )}
                                     </div>
                                 </button>
+                                {error && <p className="text-red-500 mt-2">Error: {error.message || 'Something went wrong!'}</p>}
                             </div>
                         </div>
                     </div>
