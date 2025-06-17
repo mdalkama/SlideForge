@@ -109,30 +109,44 @@ export default function GeneratePage() {
             // Create the request body that matches your API expectation
             const requestBody = {
                 topic: formData.topic,
-                description: formData.description ? `${formData.description}. ${themePrompt}` : themePrompt,
+                description: formData.description ? `${formData.description}. Theme: ${themePrompt} Language : ${formData.language}` : `Theme: ${themePrompt} Language : ${formData.language}`,
                 audience: formData.audience,
                 tone: formData.tone.toLowerCase(),
-                language: formData.language,
                 slideCount: parseInt(formData.slideCount)
             };
 
             console.log('API Request Body:', requestBody);
 
             // Replace this with your actual API call
-            // const response = await fetch('/api/generate-presentation', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify(requestBody)
-            // });
+            const response = await fetch('https://x88l33tz-3000.inc1.devtunnels.ms/api/v1/presentation/generate-presentation-plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+            const data = await response.json();
+            console.log(data.data)
+
+            const mainResponse = await fetch('https://x88l33tz-3000.inc1.devtunnels.ms/api/v1/slide/render-slides', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data.data)
+            });
+            const newdata = await mainResponse.json();
+            console.log(newdata)
+            if (newdata) {
+                setIsGenerating(false);
+            }
 
             // Simulate API call for now
-            setTimeout(() => {
-                setIsGenerating(false);
-                console.log('Generated presentation with request:', requestBody);
-                // Handle successful response here
-            }, 2000);
+            // setTimeout(() => {
+            //     setIsGenerating(false);
+            //     console.log('Generated presentation with request:', requestBody);
+            //     // Handle successful response here
+            // }, 2000);
 
         } catch (error) {
             console.error('Error generating presentation:', error);
